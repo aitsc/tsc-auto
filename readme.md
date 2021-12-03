@@ -2,7 +2,9 @@
 pip install tsc-auto
 
 ## 使用方式
-ta --help
+- 查看帮助: ta --help
+- 自动选择最低显存占用显卡跑 torch 的 cnn.py 程序: ta -p -a cnn.py
+- 手动选择编号0和1的显卡跑 tensorflow 的 cnn.py 程序: ta -t -d 0,1 -a cnn.py
 
 ## cuda的位置必须在主目录 (可以使用 ln -s 软链接)
 - ...
