@@ -1,6 +1,7 @@
 ## 介绍
-可以自动检测 torch 和 tensorflow 版本, 并自动设置环境变量相应的 cuda, 同时自动选择占用显存最低的显卡运行.
-在 anaconda 环境下使用.
+- 可以自动检测 torch 和 tensorflow 版本, 并自动设置环境变量相应的 cuda, 同时自动选择占用显存最低的显卡运行.
+- 可以实现自动后台运行运行并记录和查看日志/中止程序.
+- 需要在 anaconda 环境下使用.
 
 ## 安装
 pip install tsc-auto
@@ -10,7 +11,7 @@ pip install tsc-auto
 - 自动选择最低显存占用显卡跑 torch 的 cnn.py 程序: ta -p -a cnn.py
 - 手动选择编号0和1的显卡跑 tensorflow 的 cnn.py 程序: ta -t -d 0,1 -a cnn.py
 
-## cuda的位置必须在用户主目录 (可以使用 ln -s 软链接)
+## cuda的位置默认在用户主目录 (可以使用 ln -s 软链接)
 - ...
 - ~/cuda/8.0
 - ...

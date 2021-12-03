@@ -2,6 +2,7 @@
 # 自动配置深度学习环境变量/自动挑选显卡/自动后台日志
 py=$(which python)
 spy=${py%bin*}lib/python*/site-packages/tsc_auto/set_gpu.py  # set_gpu.py脚本所在目录绝对路径
+cudamp=~  # cuda 主目录
 # function 与mac不兼容
 function version_gt() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"; }
 function version_le() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1"; }
@@ -25,7 +26,13 @@ tensorflow='tf'
 
 while [[ $# -gt 0 ]]; do
   key="$1"
+  have_para=true
   case $key in
+      -m)
+      cudamp="$2"
+      shift # past argument
+      shift # past value
+      ;;
       -c)
       deep="$2"  # 自定义cuda版本号
       shift # past argument
@@ -93,18 +100,21 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [ $help ]; then
-  echo -e '-c\t自定义cuda版本号, 比如参数为 10.1, 可选'
-  echo -e '-t\t配置tensorflow环境变量, 可选'
-  echo -e '-p\t配置pytorch环境变量, 可选'
-  echo -e '-a\t执行python的运行文件路径,文件后不能增加参数,要参数可以使用 -o python -u'
-  echo -e '-o\t执行操作, 这个参数如果有必须是最后一个参数'
-  echo -e '-l\t日志路径, 使用日志则后台运行, 只有日志则是回顾日志'
-  echo -e '-s\t停止日志对应的进程, 只有-l的时候配合使用'
-  echo -e '-n\t不指定gpu编号,防止和其他指定调度程序冲突'
-  echo -e '-d\t指定gpu编号设备,即设置CUDA_VISIBLE_DEVICES,优先级在-n之上,不能有空格'
+if [ $help ]||[ ! $have_para ]; then
+  echo -e '注意: 使用gpu必须在对应conda环境下执行, 深度学习框架要安装在默认路径, 注意cuda目录'
+  echo -e '-c VERSION\t自定义cuda版本号, 比如参数为 11.1, 可选'
+  echo -e '-t\t\t配置tensorflow环境变量, 可选'
+  echo -e '-p\t\t配置pytorch环境变量, 可选'
+  echo -e '-a PY_FILE\t执行python的运行文件路径, 文件后不能增加参数, 要参数可以使用 -o python -u'
+  echo -e '-o\t\t执行操作, 这个参数如果有必须是最后一个参数'
+  echo -e '-l LOG_FILE\t日志路径, 使用日志则后台运行, 只有该参数则是查看日志'
+  echo -e '-s\t\t停止日志对应的进程, 只有-l存在的时候配合使用'
+  echo -e '-n\t\t不指定gpu编号, 防止和其他指定调度程序冲突'
+  echo -e '-d DEVICES\t指定gpu编号设备, 即设置CUDA_VISIBLE_DEVICES,优先级在-n之上,不能有空格'
+  echo -e '-m CUDA_PATH\t指定cuda整体所在目录, 默认是用户主目录~, 从而形成 ~/cuda/11.1 等'
   echo -e '-h, --help\t查看帮助'
-  echo -e '说明: 使用gpu必须在对应conda环境下执行, 深度学习框架要安装在默认路径, cuda路径需要适配'
+  echo -e '\t详细说明: https://github.com/aitsc/tsc-auto'
+  echo -e '\tAuthor by tanshicheng'
   exit 0
 fi
 
@@ -188,12 +198,12 @@ if [ $deep ]; then  # 配置环境变量
     cuda=$deep
   fi
 
-  cudap=~/cuda/$cuda/lib64:~/cuda/$cuda/extras/CUPTI/lib64  # cuda 路径根据需要修改
+  cudap=$cudamp/cuda/$cuda/lib64:$cudamp/cuda/$cuda/extras/CUPTI/lib64  # cuda 路径根据需要修改
   export LD_LIBRARY_PATH=${py%bin*}lib:$cudap  # cuda 路径根据需要修改
-  if !(isexist $PATH ~/cuda/$cuda/bin); then
-    export PATH=~/cuda/$cuda/bin:$PATH  # >=tf2.3 ptxas 所需
+  if !(isexist $PATH $cudamp/cuda/$cuda/bin); then
+    export PATH=$cudamp/cuda/$cuda/bin:$PATH  # >=tf2.3 ptxas 所需
   fi
-  export XLA_FLAGS=--xla_gpu_cuda_data_dir=$HOME/cuda/$cuda  # XLA libdevice.10.bc 所需
+  export XLA_FLAGS=--xla_gpu_cuda_data_dir=$cudamp/cuda/$cuda  # XLA libdevice.10.bc 所需, 路径不能有~, 可以是$HOME
 
 #  if [ $cuda == '10.2' ]; then
 #      echo $cudap
