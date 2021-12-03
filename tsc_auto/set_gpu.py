@@ -88,7 +88,7 @@ def set_gpu(showAllGpu=False, return_more=False):
             'platform': platform.platform(),  # str; 平台架构, 比如 Darwin-20.4.0-arm64-arm-64bit
             'gpu_type': gpu_type,  # list; 每个gpu的型号, 比如 GeForce RTX 208...
         }
-    # 例如: tsc-diy@192.168.150.101, 设置显卡:0(28W/260W)-0, 剩余CPU:%(1-8-2), 剩余内存:57.7GB, 剩余显存:10.8GB
+    # 例如: tsc@192.168.6.6, 设置显卡:0(28W/260W)-0, 剩余CPU:%(1-8-2), 剩余内存:57.7GB, 剩余显存:10.8GB
     print('%s@%s, 设置显卡:%d(%s)-%d, 剩余CPU:%s%%(%d-%d-%d), 剩余内存:%.1fGB, 剩余显存:%.1fGB' %
           (hostname, ip, gpu, power, len(i_m) - 1, ext_cpu, cpu_num, cpu_cores, core_pro, ext_mem / 1024,
            ext_gpu_mem / 1024))

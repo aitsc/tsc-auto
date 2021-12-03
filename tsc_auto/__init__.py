@@ -4,3 +4,4 @@
 - query.py
 - srun.sh
 '''
+from .set_gpu import set_gpu
