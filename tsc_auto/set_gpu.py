@@ -61,7 +61,8 @@ def set_gpu(showAllGpu=False, return_more=False):
             i_m = sorted(i_m, key=lambda t: t[1])
             gpu = i_m[-1][0]
             ext_gpu_mem = i_m[-1][1]
-        power = w[gpu]
+        if w:
+            power = w[gpu]
         # 每个gpu型号获取
         result_L = result.split('\n')
         for i in range(1, len(result_L)):
