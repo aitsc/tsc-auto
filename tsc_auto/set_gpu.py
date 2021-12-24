@@ -28,9 +28,10 @@ def set_gpu(showAllGpu=False, return_more=False):
         ext_mem = subprocess.check_output('free -m', shell=True) \
             .decode(encoding='utf8', errors='ignore') \
             .split('\n')[1].strip()
+        all_mem = int(re.split(r'\s+', ext_mem)[1])
         ext_mem = int(re.split(r'\s+', ext_mem)[6])  # 不是free而是available
     except:
-        ext_mem = -1
+        ext_mem, all_mem = -1, -1
     try:
         # check_output 防止 UnicodeDecodeError
         ext_cpu = subprocess.check_output('top -bn 1 | head -n 10', shell=True) \
@@ -50,6 +51,7 @@ def set_gpu(showAllGpu=False, return_more=False):
         cpu_num, cpu_cores, core_pro, cpu_type = 0, 0, 0, []
     (status, result) = subprocess.getstatusoutput('nvidia-smi')
     i_m = []
+    all_gpu_mem = []
     power = 'W'
     w = []
     w_re = r'(?<=\s)[\s\d]+?W\s+?/[\s\d]+?W(?=\s)'  # 提取功率
@@ -59,6 +61,7 @@ def set_gpu(showAllGpu=False, return_more=False):
         if showAllGpu:
             print(result)
         r = re.findall(r'(?<=[|/])[\s\d]+?(?=MiB)', result)
+        all_gpu_mem = [int(r[i + 1]) for i in range(0, len(r), 2)]
         r = [int(r[i + 1]) - int(r[i]) for i in range(0, len(r), 2)]
         w = [i.replace(' ', '') for i in re.findall(w_re, result)]
         gpu_usage = [int(re.search('(?<= )[0-9.]+?(?=%)', i).group()) for i in result.split('\n') if re.search(w_re, i)]
@@ -92,8 +95,10 @@ def set_gpu(showAllGpu=False, return_more=False):
             'gpu_power': w,  # list; 每张gpu的使用功率和上限功率
             'gpu_usage': gpu_usage,  # list; 每张gpu的使用率
             'ext_gpu_mem': [i[1] for i in i_m],  # list; 每张gpu的剩余显存数量, 单位MB
+            'all_gpu_mem': all_gpu_mem,  # list; 每张gpu的总显存数量, 单位MB
             'ext_cpu': ext_cpu,  # str; 剩余的cpu使用率, 单位百分比
             'ext_mem': ext_mem,  # int; 剩余内存数量, 单位MB
+            'all_mem': all_mem,  # int; 总计内存数量, 单位MB
             'cpu_info': f"{n}:{cpu_num}-{cpu_cores}-{core_pro}",  # str; 总线程数:cpu数-每个cpu的核心数-每个核心的超线程数
             'platform': platform.platform(),  # str; 平台架构, 比如 Darwin-20.4.0-arm64-arm-64bit
             'gpu_type': gpu_type,  # list; 每个gpu的型号, 比如 NVIDIA GeForce RTX 2080 Ti
