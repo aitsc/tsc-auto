@@ -64,7 +64,7 @@ def set_gpu(showAllGpu=False, return_more=False):
         all_gpu_mem = [int(r[i + 1]) for i in range(0, len(r), 2)]
         r = [int(r[i + 1]) - int(r[i]) for i in range(0, len(r), 2)]
         w = [i.replace(' ', '') for i in re.findall(w_re, result)]
-        gpu_usage = [int(re.search('(?<= )[0-9.]+?(?=%)', i).group()) for i in result.split('\n') if re.search(w_re, i)]
+        gpu_usage = [int(re.search(r'(?<= )[0-9.]+?(?=[%])', i).group()) for i in result.split('\n') if re.search(w_re, i)]
         i_m = [(i, j) for i, j in enumerate(r)]
         if i_m:
             i_m = sorted(i_m, key=lambda t: t[1])
