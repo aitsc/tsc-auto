@@ -94,6 +94,10 @@ while [[ $# -gt 0 ]]; do
       help=true
       shift # past argument
       ;;
+      --stat)
+      python3 $spy
+      exit 0
+      ;;
       *)  # 其他情况
       shift # past argument
       ;;
@@ -112,6 +116,7 @@ if [ $help ]||[ ! $have_para ]; then
   echo -e '-n\t\t不自动指定gpu编号设备, 防止和其他指定调度程序冲突'
   echo -e '-d DEVICES\t指定gpu编号设备, 即设置CUDA_VISIBLE_DEVICES,优先级在-n之上,不能有空格'
   echo -e '-m CUDA_PATH\t指定cuda整体所在目录, 默认是用户主目录~, 从而形成 ~/cuda/11.1 等'
+  echo -e '--stat\t\t只显示资源统计结果'
   echo -e '-h, --help\t查看帮助'
   echo -e '\t详细说明: https://github.com/aitsc/tsc-auto'
   echo -e '\tAuthor by tanshicheng'

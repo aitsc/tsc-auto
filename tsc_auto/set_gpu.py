@@ -4,6 +4,7 @@ import re
 import sys
 import socket
 import platform
+from pprint import pprint
 
 
 # 适用于linux
@@ -38,24 +39,29 @@ def set_gpu(showAllGpu=False, return_more=False):
     except:
         ext_cpu = ''
     try:
+        cpu_type = subprocess.getstatusoutput('cat /proc/cpuinfo | grep name | cut -f2 -d: |uniq -c')[1].split('\n')
+        cpu_type = [i.strip() for i in cpu_type]
         cpu_num = int(subprocess.getstatusoutput('cat /proc/cpuinfo |grep "physical id"|sort|uniq|wc -l')[1])
         cpu_cores = int(
             subprocess.getstatusoutput('cat /proc/cpuinfo |grep "cpu cores"|uniq')[1].split('\n')[0].split(':')[1])
         core_pro = int(subprocess.getstatusoutput('cat /proc/cpuinfo |grep "processor"|wc -l')[1])
         core_pro = int(core_pro / cpu_num / cpu_cores)
     except:
-        cpu_num, cpu_cores, core_pro = 0, 0, 0
+        cpu_num, cpu_cores, core_pro, cpu_type = 0, 0, 0, []
     (status, result) = subprocess.getstatusoutput('nvidia-smi')
     i_m = []
     power = 'W'
     w = []
+    w_re = r'(?<=\s)[\s\d]+?W\s+?/[\s\d]+?W(?=\s)'  # 提取功率
+    gpu_usage = []
     gpu_type = []
     if status == 0:
         if showAllGpu:
             print(result)
         r = re.findall(r'(?<=[|/])[\s\d]+?(?=MiB)', result)
         r = [int(r[i + 1]) - int(r[i]) for i in range(0, len(r), 2)]
-        w = [i.replace(' ', '') for i in re.findall(r'(?<=\s)[\s\d]+?W\s+?/[\s\d]+?W(?=\s)', result)]
+        w = [i.replace(' ', '') for i in re.findall(w_re, result)]
+        gpu_usage = [int(re.search('(?<= )[0-9.]+?(?=%)', i).group()) for i in result.split('\n') if re.search(w_re, i)]
         i_m = [(i, j) for i, j in enumerate(r)]
         if i_m:
             i_m = sorted(i_m, key=lambda t: t[1])
@@ -64,10 +70,12 @@ def set_gpu(showAllGpu=False, return_more=False):
         if w:
             power = w[gpu]
         # 每个gpu型号获取
-        result_L = result.split('\n')
-        for i in range(1, len(result_L)):
-            if re.search(r'\|\s*?\d+?MiB / \d+?MiB \|', result_L[i]):
-                gpu_type.append(re.split(r' [ ]+', result_L[i - 1])[2])
+        # result_L = result.split('\n')  # 这种方式获取不全
+        # for i in range(1, len(result_L)):
+        #     if re.search(r'\|\s*?\d+?MiB / \d+?MiB \|', result_L[i]):
+        #         gpu_type.append(re.split(r' [ ]+', result_L[i - 1])[2])
+        gpu_type = subprocess.getstatusoutput('nvidia-smi -L')[1].split('\n')
+        gpu_type = [re.search(r'(?<=: )[^(\r\n]+', i).group().strip() for i in gpu_type]
     hostname = subprocess.getstatusoutput('hostname')[1]
     ip = socket.gethostbyname(hostname)
     try:
@@ -82,12 +90,14 @@ def set_gpu(showAllGpu=False, return_more=False):
             'hostname': hostname,  # str, 主机名
             'ip': ip,  # str; 主机局域网ip
             'gpu_power': w,  # list; 每张gpu的使用功率和上限功率
+            'gpu_usage': gpu_usage,  # list; 每张gpu的使用率
             'ext_gpu_mem': [i[1] for i in i_m],  # list; 每张gpu的剩余显存数量, 单位MB
             'ext_cpu': ext_cpu,  # str; 剩余的cpu使用率, 单位百分比
             'ext_mem': ext_mem,  # int; 剩余内存数量, 单位MB
             'cpu_info': f"{n}:{cpu_num}-{cpu_cores}-{core_pro}",  # str; 总线程数:cpu数-每个cpu的核心数-每个核心的超线程数
             'platform': platform.platform(),  # str; 平台架构, 比如 Darwin-20.4.0-arm64-arm-64bit
-            'gpu_type': gpu_type,  # list; 每个gpu的型号, 比如 GeForce RTX 208...
+            'gpu_type': gpu_type,  # list; 每个gpu的型号, 比如 NVIDIA GeForce RTX 2080 Ti
+            'cpu_type': cpu_type,  # list; 每个cpu的型号, 比如 16  Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz
         }
     # 例如: tsc@192.168.6.6, 设置显卡:0(28W/260W)-0, 剩余CPU:%(1-8-2), 剩余内存:57.7GB, 剩余显存:10.8GB
     print('%s@%s, 设置显卡:%d(%s)-%d, 剩余CPU:%s%%(%d-%d-%d), 剩余内存:%.1fGB, 剩余显存:%.1fGB' %
@@ -103,4 +113,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         sys.exit(gpu + 1)
     else:
-        print(set_gpu(return_more=True))
+        pprint(set_gpu(return_more=True))
