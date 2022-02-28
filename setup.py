@@ -9,7 +9,7 @@ else:
 
 setup(
     name='tsc-auto',
-    version='0.9',
+    version='0.10',
     description="Auto selector for GPU and CUDA, support the detection of tensorflow or torch",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -26,7 +26,10 @@ setup(
         'Topic :: Software Development :: Libraries',
     ],
     entry_points={  # 打包到bin
-        'console_scripts': ['ta=tsc_auto.auto:main'],  # 包不能有-符号
+        'console_scripts': [
+            'ta=tsc_auto.auto:main',  # 包不能有-符号
+            'tkill=tsc_auto.kill:main',
+        ],
     },
     python_requires='>=3.6',
 )

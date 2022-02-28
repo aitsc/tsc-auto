@@ -8,6 +8,8 @@ import traceback
 import copy
 from datetime import datetime
 from pprint import pprint
+import argparse
+import shutil
 
 
 def get_nvidia_processes():
@@ -200,7 +202,21 @@ def kill_processes(config_, test=False):
             print()
 
 
-if __name__ == '__main__':
+def main():
+    parser = argparse.ArgumentParser(description='用于限制系统的cpu/gpu资源使用')
+    parser.add_argument('-c', default='kill.config', help='配置文件路径, 文件不存在会自动创建一个默认配置')  # 配置文件路径
+    parser.add_argument('-t', action="store_true", help='是否进行测试, 测试不会杀死进程, 并修改为容易触发kill的参数')
+    args = parser.parse_args()
+    args.c = os.path.expanduser(args.c)  # 可以使用 ~ 表示用户目录
+    if not os.path.exists(args.c):
+        # 自动寻找默认 kill.config 的位置
+        default_config_path = subprocess.getstatusoutput(
+            'py=$(which python) && echo ${py%bin*}lib/python*/site-packages/tsc_auto/kill.config')
+        shutil.copyfile(default_config_path, args.c)
+        print('创建了一个默认配置:', args.c)
+    else:
+        print('使用配置:', args.c)
+    # 默认配置
     config = {
         's': 10,  # 多少秒检测一次
         'cpu_core_u': 2147483647,  # 一个用户-最多CPU占用(百分比,如100表示占满1个超线程)
@@ -212,8 +228,9 @@ if __name__ == '__main__':
         'gpu_day': 20,  # 单进程-最长显卡占用时间(天)
         'cpu_day': 20,  # 单进程-最长cpu占用时间(天)
         'cpu_day_core_limit': 80,  # CPU占用百分比超过此值的进程才会使 cpu_day 配置生效
-        'include_u': set(),  # 不可忽略的用户, 默认会包含路径含有 /home/ 的用户, 优先级高于 ignore_u
-        'ignore_u': {i.split(':')[0] for i in open('/etc/passwd').readlines() if '/home/' not in i},  # 忽略的用户
+        'include_u': set(),  # 不可忽略的用户, 优先级高于 ignore_u
+        # 忽略的用户, 默认会包含 /etc/passwd 中路径不含有 /home/ 的用户
+        'ignore_u': {i.split(':')[0] for i in open('/etc/passwd').readlines() if '/home/' not in i},
         # 'ignore_u': os.popen("cat /etc/passwd | grep -v '/home/' | awk -F ':' '{print $1}'").read().splitlines(),
         # 针对每个特殊配置设置用户，没写的默认使用上述设置，越靠list后面的优先级越高会覆盖前面一样的用户配置
         'conf': [
@@ -235,8 +252,8 @@ if __name__ == '__main__':
             },
         },
     }
-    if len(sys.argv) > 1:  # 加参数测试
-        test = True
+    # 加参数测试, 测试的时候使用容易出发kill的参数
+    if args.t:
         print('测试...不杀死进程\n')
         config.update({
             'cpu_core_u': 50,
@@ -249,19 +266,20 @@ if __name__ == '__main__':
             'cpu_day': 1,
             'cpu_day_core_limit': 0,
         })
-    else:
-        test = False
+        # config['include_u'].add('root')  # 加入 root 进行测试
     # 防止进程重复运行
-    if not test:
+    if not args.t:
         std = subprocess.Popen(["pgrep", "-f", __file__], stdout=subprocess.PIPE).communicate()
         if len(std[0].decode().split()) > 1:
             exit('Already running')
-    config_path = os.path.expanduser('kill.config')
+    # 开始不断检测
     while True:
-        if os.path.isfile(config_path):
+        if args.t:
+            print('\n测试 - ', str(datetime.now()))
+        if os.path.isfile(args.c):
             try:
                 config_new = copy.deepcopy(config)
-                with open(config_path, 'r', encoding='utf8') as r:
+                with open(args.c, 'r', encoding='utf8') as r:
                     for k, v in eval(r.read().strip()).items():  # 小心eval恶意插入代码
                         config_new.setdefault(k, v)
                         if isinstance(v, dict):
@@ -272,12 +290,16 @@ if __name__ == '__main__':
                             config_new[k] = v
                 if config != config_new:
                     print(str(datetime.now()), '重新加载约束条件!')  # 没有输出这行注意可能是config路径不对
-                    if test:
+                    if args.t:
                         pprint(config_new)
                         print()
                     config = config_new
             except:
                 traceback.print_exc()
                 print()
-        kill_processes(config, test)
+        kill_processes(config, args.t)
         time.sleep(config['s'])
+
+
+if __name__ == '__main__':
+    main()
