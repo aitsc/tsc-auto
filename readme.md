@@ -1,10 +1,11 @@
+# 安装
+pip install tsc-auto
+
+# 功能1: ta
 ## 介绍
 - 可以自动检测 torch 和 tensorflow 版本, 并自动设置环境变量相应的 cuda, 同时自动选择占用显存最低的显卡运行.
 - 可以实现自动后台运行运行并记录和查看日志/中止程序.
 - 需要在 anaconda 环境下使用.
-
-## 安装
-pip install tsc-auto
 
 ## 使用方式
 - 查看帮助: ta --help
@@ -27,3 +28,42 @@ pip install tsc-auto
 - cp cudnn-v8.2.0.53/include/cudnn.h 11.0/include/
 - cp cudnn-v8.2.0.53/lib64/libcudnn* 11.0/lib64
 - chmod a+r 11.0/include/cudnn.h 11.0/lib64/libcudnn*
+
+# 功能2: tkill
+## 介绍
+- 用于限制linux系统的cpu/gpu资源使用, 例如可以针对以下内容进行限制:
+```python
+{
+    's': 10,  # 多少秒检测一次
+    'cpu_core_u': 2147483647,  # 一个用户-最多CPU占用(百分比,如100表示占满1个超线程)
+    'gpu_card_u': 2,  # 一个用户-最多显卡(张)
+    'gpu_mem_u': 24,  # 一个用户-最大显存(GB)
+    'gpu_card': 2,  # 单进程-最多显卡(张)
+    'gpu_mem': 21000,  # 单进程-最大显存(MB)
+    'gpu_day': 15,  # 单进程-最长显卡占用时间(天)
+    'cpu_day': 15,  # 单进程-最长cpu占用时间(天)
+    'cpu_day_core_limit': 80,  # CPU占用百分比超过此值的进程才会使 cpu_day 配置生效
+    'ignore_u': {'999',},  # 忽略的用户, 默认会包含 /etc/passwd 中路径不含有 /home/ 的用户
+    'include_u': {'example_user',},  # 不可忽略的用户, 优先级高于 ignore_u
+    # 针对每个特殊配置设置用户，没写的默认使用上述设置，越靠list后面的优先级越高会覆盖前面一样的用户配置
+    'conf': [
+        {  # 一组配置和对应的用户
+            'gpu_mem': 24000,
+            'conf_u': {'tsc'},  # 使用这组配置的用户
+        },
+    ],
+    # 针对每个用户的额外配置, 没写的默认使用上述设置, 优先级最高
+    'user': {
+        'example_user': {
+            'gpu_mem_u': 41,
+            'gpu_card_u': 3,
+        },
+    },
+}
+```
+
+## 使用方式
+- 查看帮助: tkill -h
+- 首先, 运行 tkill -c 'kill.config' -t 再终止程序(ctrl+c), 用于生成默认配置文件
+- 然后, 修改配置文件的内容
+- 最后, 运行 tkill -c 'kill.config' 开启限制程序

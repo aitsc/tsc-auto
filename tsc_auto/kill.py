@@ -203,7 +203,7 @@ def kill_processes(config_, test=False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='用于限制系统的cpu/gpu资源使用')
+    parser = argparse.ArgumentParser(description='用于限制linux系统的cpu/gpu资源使用')
     parser.add_argument('-c', default='kill.config', help='配置文件路径, 文件不存在会自动创建一个默认配置')  # 配置文件路径
     parser.add_argument('-t', action="store_true", help='是否进行测试, 测试不会杀死进程, 并修改为容易触发kill的参数')
     args = parser.parse_args()
