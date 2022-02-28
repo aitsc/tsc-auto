@@ -212,6 +212,11 @@ def main():
         # 自动寻找默认 kill.config 的位置
         default_config_path = subprocess.getstatusoutput(
             'py=$(which python) && echo ${py%bin*}lib/python*/site-packages/tsc_auto/kill.config')
+        # 没有报错
+        if default_config_path[0] == 0:
+            default_config_path = default_config_path[1]
+        else:
+            raise NameError(str(default_config_path) + ' 寻找 ...lib/python*/site-packages/tsc_auto/kill.config 错误!')
         shutil.copyfile(default_config_path, args.c)
         print('创建了一个默认配置:', args.c)
     else:
