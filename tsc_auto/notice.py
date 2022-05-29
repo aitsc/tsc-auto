@@ -9,6 +9,7 @@ import argparse
 import sys
 import os
 import fcntl
+import time
 
 
 def send_wechat(title: str, content: str, token: str, template='txt', channel='wechat'):
@@ -20,6 +21,9 @@ def send_wechat(title: str, content: str, token: str, template='txt', channel='w
         token (str): 用户令牌
         template (str, optional): 发送模板, 例如 txt html json markdown
         channel (str, optional): 发送渠道
+
+    Returns:
+        ret (dict)
     """
     data = {
         'token': token,
@@ -28,8 +32,16 @@ def send_wechat(title: str, content: str, token: str, template='txt', channel='w
         'template': template,
         'channel': channel,
     }
-    r = requests.post(url='https://www.pushplus.plus/send', data=json.dumps(data))
-    return r.text
+    ret = {"msg": "无法联网, 通知失败!"}
+    for i in range(3):  # 失败后再尝试
+        try:
+            r = requests.post(url='https://www.pushplus.plus/send', data=json.dumps(data))
+            ret = json.loads(r.text)
+            break
+        except:
+            print('notification failed {} ...'.format(i+1))
+            time.sleep(5)
+    return ret
 
 
 def get_time_diff(s: str, e: str):
@@ -38,6 +50,9 @@ def get_time_diff(s: str, e: str):
     Args:
         s (str): 开始时间, 格式: date "+%Y-%m-%d %H:%M:%S.%N|cut -c 1-26" = 2022-05-24 18:18:59.574227
         e (str): 结束时间, 格式和s一样
+
+    Returns:
+        str: 例如 3.1 秒
     """
     try:
         s = datetime.strptime(s, "%Y-%m-%d %H:%M:%S.%f")

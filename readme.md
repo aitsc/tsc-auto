@@ -12,12 +12,12 @@ pip install tsc-auto
 - 查看帮助: ta --help
 - 自动选择最低显存占用显卡跑 torch 的 cnn.py 程序: ta -p -a cnn.py
 - 手动选择编号0和1的显卡跑 tensorflow 的 cnn.py 程序: ta -t -d 0,1 -a cnn.py
-- 发送通知（暂时借助pushplus实现)
+- 发送通知（借助 [pushplus](https://pushplus.plus) 实现)
   1. 微信登录: https://pushplus.plus/login.html
   2. 激活微信公众号, 接收文章推送, 关闭消息免打扰
   3. 获取token: https://pushplus.plus/push1.html
   4. 测试: ta -x 你的token -o echo 成功
-  5. 注意: 运行机需要联网; 不能使用ta自带的后台运行方式(-l); 频率太高可能封号/封ip: https://www.pushplus.plus/doc/help/limit.html#接口限制
+  5. 注意: 运行机需要联网; 不能使用ta自带的后台运行方式(可以手动nohup); 频率太高可能[封号](https://www.pushplus.plus/doc/help/limit.html#接口限制)/[封ip](https://www.pushplus.plus/doc/help/ip.html)
 
 ## cuda的位置默认在用户主目录 (可以使用 ln -s 软链接)
 - ...
