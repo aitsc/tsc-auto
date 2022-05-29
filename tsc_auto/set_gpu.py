@@ -5,6 +5,7 @@ import sys
 import socket
 import platform
 from pprint import pprint
+import json
 
 
 # 适用于linux
@@ -16,11 +17,12 @@ from pprint import pprint
 #     os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 
-def set_gpu(showAllGpu=False, return_more=False):
+def set_gpu(showAllGpu=False, return_more=False, public_net=False):
     """
     指定最小显存占用GPU
     :param showAllGpu: bool; 是否显示所有gpu的状态
     :param return_more: bool; 是否返回更多信息, 将以dict形式返回, 选择这个将不输出信息和设置显卡
+    :param public_net: bool; 是否读取返回公网ip等信息, 需要 return_more=True
     :return:
     """
     gpu, ext_gpu_mem = -1, -1
@@ -90,7 +92,7 @@ def set_gpu(showAllGpu=False, return_more=False):
         ...
     if return_more:
         n = int(cpu_num * cpu_cores * core_pro)
-        return {
+        ret = {
             'hostname': hostname,  # str, 主机名
             'ip': ip,  # str; 主机局域网ip
             'gpu_power': w,  # list; 每张gpu的使用功率和上限功率
@@ -105,6 +107,20 @@ def set_gpu(showAllGpu=False, return_more=False):
             'gpu_type': gpu_type,  # list; 每个gpu的型号, 比如 NVIDIA GeForce RTX 2080 Ti
             'cpu_type': cpu_type,  # list; 每个cpu的型号, 比如 16  Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz
         }
+        if public_net:
+            def have_ip_f(s):  # 传入可以 curl 的域名
+                s = subprocess.getstatusoutput('curl -s ' + s)[1]
+                s = s if re.search('([^0-9]|^)[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}([^0-9]|$)', s) else '{}'
+                try:
+                    s = json.loads(s)
+                except:
+                    ...
+                return s
+            ret['public_net'] = {  # 通过 curl 获取
+                'ipip': have_ip_f('myip.ipip.net'),
+                'ipinfo': have_ip_f('ipinfo.io'),
+            }
+        return ret
     # 例如: tsc@192.168.6.6, 设置显卡:0(28W/260W)-0, 剩余CPU:%(1-8-2), 剩余内存:57.7GB, 剩余显存:10.8GB
     print('%s@%s, 设置显卡:%d(%s)-%d, 剩余CPU:%s%%(%d-%d-%d), 剩余内存:%.1fGB, 剩余显存:%.1fGB' %
           (hostname, ip, gpu, power, len(i_m) - 1, ext_cpu, cpu_num, cpu_cores, core_pro, ext_mem / 1024,
@@ -119,4 +135,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         sys.exit(gpu + 1)
     else:
-        pprint(set_gpu(return_more=True))
+        pprint(set_gpu(return_more=True, public_net=True))
