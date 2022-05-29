@@ -247,8 +247,11 @@ echo PATH=$PATH
 echo XLA_FLAGS=$XLA_FLAGS
 echo
 
+start_time=`date '+%Y-%m-%d %H:%M:%S.%N'|cut -c 1-26`
 eval $run
 exit_state=$?
+end_time=`date '+%Y-%m-%d %H:%M:%S.%N'|cut -c 1-26`
+
 if [ $log ]; then  # 输出日志
   echo '进程ID: '$!';;' >> $log
   echo '日志路径: '$(readlink -f $log)
@@ -257,6 +260,7 @@ if [ $log ]; then  # 输出日志
 else
   if [ "$notice_token" ]; then  # 结束通知
     echo send notification ...
-    echo $run | python3 $npy -t "$notice_token" -d $exit_state
+    # npy="./notice.py"  # 调试
+    echo $run | python3 $npy -t "$notice_token" -d "$exit_state" -s "$start_time" -e "$end_time"
   fi
 fi
