@@ -2,6 +2,7 @@
 # 自动配置深度学习环境变量/自动挑选显卡/自动后台日志
 py=$(which python)
 spy=${py%bin*}lib/python*/site-packages/tsc_auto/set_gpu.py  # set_gpu.py脚本所在目录绝对路径
+npy=${py%bin*}lib/python*/site-packages/tsc_auto/notice.py  # notice.py脚本所在目录绝对路径
 cudamp=~  # cuda 主目录
 # function 与mac不兼容
 function version_gt() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"; }
@@ -78,6 +79,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+      -x)
+      notice_token="$2"
+      shift # past argument
+      shift # past value
+      ;;
       -s)
       S=true
       shift # past argument
@@ -116,10 +122,11 @@ if [ $help ]||[ ! $have_para ]; then
   echo -e '-n\t\t不自动指定gpu编号设备, 防止和其他指定调度程序冲突'
   echo -e '-d DEVICES\t指定gpu编号设备, 即设置CUDA_VISIBLE_DEVICES,优先级在-n之上,不能有空格'
   echo -e '-m CUDA_PATH\t指定cuda整体所在目录, 默认是用户主目录~, 从而形成 ~/cuda/11.1 等'
-  echo -e '--stat\t\t只显示资源统计结果'
+  echo -e '-x token\t运行结束通过 https://pushplus.plus 发微信通知(-l不支持), 运行机需联网'
+  echo -e '--stat\t\t不运行程序, 只显示资源统计结果'
   echo -e '-h, --help\t查看帮助'
   echo -e '\t详细说明: https://github.com/aitsc/tsc-auto'
-  echo -e '\tAuthor by tanshicheng'
+  echo -e '\tAuthor by tanshicheng 2022.05.29'
   exit 0
 fi
 
@@ -241,9 +248,15 @@ echo XLA_FLAGS=$XLA_FLAGS
 echo
 
 eval $run
+exit_state=$?
 if [ $log ]; then  # 输出日志
   echo '进程ID: '$!';;' >> $log
   echo '日志路径: '$(readlink -f $log)
   tail -f $log
   exit 0
+else
+  if [ "$notice_token" ]; then  # 结束通知
+    echo send notification ...
+    echo $run | python3 $npy -t "$notice_token" -d $exit_state
+  fi
 fi
