@@ -160,7 +160,7 @@ if __name__ == '__main__':
         '总耗时': get_time_diff(args.s, args.e),
         '执行指令': args.c,
         '命令退出状态': explain_exit_code(args.d),
-        '执行结束后的机器状态': {k: '; '.join([str(i) for i in v]) if isinstance(v, list) else v for k, v in set_gpu(return_more=True, public_net=True).items()},
+        '执行结束后的机器状态(内存单位MB)': {k: '; '.join([str(i) for i in v]) if isinstance(v, list) else v for k, v in set_gpu(return_more=True, public_net=True).items()},
     }
     ret = send_wechat('ta-{}: '.format(args.d) + args.c[:90], json.dumps(content, ensure_ascii=False, indent=4), args.t)
     print('notification:', ret)

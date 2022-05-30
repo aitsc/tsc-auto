@@ -6,6 +6,7 @@ import socket
 import platform
 from pprint import pprint
 import json
+import traceback
 
 
 # 适用于linux
@@ -15,6 +16,48 @@ import json
 # 原文中设置显卡的地方可以避免冲突:
 # if not 'CUDA_VISIBLE_DEVICES' in os.environ:
 #     os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+def get_public_net(analysis=True):
+    """
+    从不同网站获取公网ip等信息
+    :param analysis: bool; 是否深入解析不同网站返回的结果, 可能网站返回形式变化导致解析错误
+    :return: dict
+    """
+    re_ip = re.compile(r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')  # 匹配ip的正则
+    def have_ip_f(url):  # 传入可以 curl 的域名
+        s = subprocess.getstatusoutput('curl -s --connect-timeout 3 -m 3 ' + url)[1]
+        s = s if re_ip.search(s) else '{}'
+        s = re.sub(r'[\r\n]+', r'\n', s).strip()
+        try:
+            s = json.loads(s)
+        except:
+            ...
+        if analysis:  # 深度分析
+            try:
+                if url == 'myip.ipip.net':
+                    s = {
+                        'ip': re_ip.search(s).group(), 
+                        'from': re.sub(r'[\s:：|]+', ' ', re.search('(?<=来自于).+', s).group()).strip(),
+                    }
+                elif url == 'ipinfo.io':
+                    del s['readme']
+                elif url == 'cip.cc':
+                    s = {
+                        'ip': re_ip.search(s).group(), 
+                        'from': re.sub(r'[\s:：|]+', ' ', re.search('(?<=地址).+', s.replace('\n运营商', '')).group()).strip(),
+                        'from2': re.sub(r'[\s:：|]+', ' ', re.search('(?<=数据二).+', s).group()).strip(),
+                        'from3': re.sub(r'[\s:：|]+', ' ', re.search('(?<=数据三).+', s).group()).strip(),
+                    }
+            except:
+                # traceback.print_exc()
+                ...
+        return s
+    public_net = {  # 通过 curl 获取
+        'ipip': have_ip_f('myip.ipip.net'),
+        'cip': have_ip_f('cip.cc'),
+        'ipinfo': have_ip_f('ipinfo.io'),
+    }
+    return public_net
 
 
 def set_gpu(showAllGpu=False, return_more=False, public_net=False):
@@ -108,18 +151,7 @@ def set_gpu(showAllGpu=False, return_more=False, public_net=False):
             'cpu_type': cpu_type,  # list; 每个cpu的型号, 比如 16  Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz
         }
         if public_net:
-            def have_ip_f(s):  # 传入可以 curl 的域名
-                s = subprocess.getstatusoutput('curl -s ' + s)[1]
-                s = s if re.search('([^0-9]|^)[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}([^0-9]|$)', s) else '{}'
-                try:
-                    s = json.loads(s)
-                except:
-                    ...
-                return s
-            ret['public_net'] = {  # 通过 curl 获取
-                'ipip': have_ip_f('myip.ipip.net'),
-                'ipinfo': have_ip_f('ipinfo.io'),
-            }
+            ret['public_net'] = get_public_net()
         return ret
     # 例如: tsc@192.168.6.6, 设置显卡:0(28W/260W)-0, 剩余CPU:%(1-8-2), 剩余内存:57.7GB, 剩余显存:10.8GB
     print('%s@%s, 设置显卡:%d(%s)-%d, 剩余CPU:%s%%(%d-%d-%d), 剩余内存:%.1fGB, 剩余显存:%.1fGB' %
@@ -135,4 +167,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         sys.exit(gpu + 1)
     else:
-        pprint(set_gpu(return_more=True, public_net=True))
+        ret = set_gpu(return_more=True, public_net=True)
+        # pprint(ret)
+        print(json.dumps(ret, ensure_ascii=False, indent=2))
