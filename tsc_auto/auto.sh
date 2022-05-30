@@ -259,6 +259,7 @@ if [ $log ]; then  # 输出日志
   exit 0
 else
   if [ "$notice_token" ]; then  # 结束通知
+    echo
     echo send notification ...
     # npy="./notice.py"  # 调试
     echo $run | python3 $npy -t "$notice_token" -d "$exit_state" -s "$start_time" -e "$end_time"
