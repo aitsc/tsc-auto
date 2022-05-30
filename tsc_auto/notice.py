@@ -155,12 +155,12 @@ if __name__ == '__main__':
     if args.c == '' or args.t == '':
         sys.exit(0)
     content = {
-        '结束执行时间': args.e,
-        '开始执行时间': args.s,
         '总耗时': get_time_diff(args.s, args.e),
         '执行指令': args.c,
-        '命令退出状态': explain_exit_code(args.d),
-        '执行结束后的机器状态(内存单位MB)': {k: '; '.join([str(i) for i in v]) if isinstance(v, list) else v for k, v in set_gpu(return_more=True, public_net=True).items()},
+        '开始执行时间': args.s,
+        '结束执行时间': args.e,
+        '命令退出状态(UNIX信号解释)': explain_exit_code(args.d),
+        '执行结束后的机器状态(mem单位为MB)': {k: '; '.join([str(i) for i in v]) if isinstance(v, list) else v for k, v in set_gpu(return_more=True, public_net=True).items()},
     }
-    ret = send_wechat('ta-{}: '.format(args.d) + args.c[:90], json.dumps(content, ensure_ascii=False, indent=4), args.t)
+    ret = send_wechat('ta {}: '.format(args.d) + args.c[:90], json.dumps(content, ensure_ascii=False, indent=4), args.t)
     print('notification:', ret)
