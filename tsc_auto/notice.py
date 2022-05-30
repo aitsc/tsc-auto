@@ -143,6 +143,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', default='', help='命令执行的退出代码')
     parser.add_argument('-s', default='', help='程序开始执行时间, 格式参考 get_time_diff')
     parser.add_argument('-e', default='', help='程序结束执行时间, 格式参考 get_time_diff')
+    parser.add_argument('--cuda', default='', help='CUDA_VISIBLE_DEVICES 环境变量')
     args = parser.parse_args()
     # print(args.c, args.t)
     if args.c == '':
@@ -156,9 +157,10 @@ if __name__ == '__main__':
         sys.exit(0)
     content = {
         '总耗时': get_time_diff(args.s, args.e),
-        '执行指令': args.c,
+        'CUDA_VISIBLE_DEVICES': args.cuda,
         '开始执行时间': args.s,
         '结束执行时间': args.e,
+        '执行指令': args.c,
         '命令退出状态(UNIX信号解释)': explain_exit_code(args.d),
         '执行结束后的机器状态(mem单位为MB)': {k: '; '.join([str(i) for i in v]) if isinstance(v, list) else v for k, v in set_gpu(return_more=True, public_net=True).items()},
     }
