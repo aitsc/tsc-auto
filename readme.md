@@ -68,6 +68,7 @@ pip install tsc-auto
     },
 }
 ```
+- 退出某用户在显卡中的进程, 防止程序结束而显存没有释放: tkill --knp username
 
 ## 使用方式
 - 查看帮助: tkill -h

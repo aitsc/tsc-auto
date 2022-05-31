@@ -206,7 +206,12 @@ def main():
     parser = argparse.ArgumentParser(description='用于限制linux系统的cpu/gpu资源使用')
     parser.add_argument('-c', default='kill.config', help='配置文件路径, 文件不存在会自动创建一个默认配置')  # 配置文件路径
     parser.add_argument('-t', action="store_true", help='是否进行测试, 测试不会杀死进程, 并修改为容易触发kill的参数')
-    args = parser.parse_args()
+    parser.add_argument('--knp', default='', help='kill nvidia python user, 退出某用户在显卡中的python进程, 会忽略其他功能')
+    args, unknown = parser.parse_known_args()  # 忽略未知参数
+    if args.knp != '':
+        os.system(
+            '''up1kEK9m=$(lsof /dev/nvidia* | grep -E python.+%s); echo -e "$up1kEK9m\\nStart killing in 5 seconds"; sleep 5; echo "$up1kEK9m" | awk '{print $2}' | xargs -I {} kill -9 {}''' % args.knp)
+        sys.exit(0)
     args.c = os.path.expanduser(args.c)  # 可以使用 ~ 表示用户目录
     if not os.path.exists(args.c):
         # 自动寻找默认 kill.config 的位置
