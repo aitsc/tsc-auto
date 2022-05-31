@@ -262,6 +262,6 @@ else
     echo
     echo send notification ...
     # npy="./notice.py"  # 调试
-    echo $run | python3 $npy -t "$notice_token" -d "$exit_state" -s "$start_time" -e "$end_time" --cuda "$CUDA_VISIBLE_DEVICES"
+    echo $run | python3 $npy -t "$notice_token" -d "$exit_state" -s "$start_time" -e "$end_time"
   fi
 fi
