@@ -144,8 +144,8 @@ if __name__ == '__main__':
     parser.add_argument('-d', default='', help='命令执行的退出代码')
     parser.add_argument('-s', default='', help='程序开始执行时间, 格式参考 get_time_diff')
     parser.add_argument('-e', default='', help='程序结束执行时间, 格式参考 get_time_diff')
-    args = parser.parse_args()
-    # print(args.c, args.t)
+    args, unknown = parser.parse_known_args()  # 忽略未知参数
+    # print(args, unknown)
     if args.c == '':
         fcntl.fcntl(sys.stdin, fcntl.F_SETFL, os.O_NONBLOCK)
         try:
