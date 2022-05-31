@@ -113,9 +113,9 @@ def set_gpu(showAllGpu=False, return_more=False, public_net=False):
                      for i in result.split('\n') if re.search(w_re, i)]
         i_m = [(i, j) for i, j in enumerate(r)]
         if i_m:
-            i_m = sorted(i_m, key=lambda t: t[1])
-            gpu = i_m[-1][0]
-            ext_gpu_mem = i_m[-1][1]
+            i_m_1 = sorted(i_m, key=lambda t: t[1])[-1]
+            gpu = i_m_1[0]
+            ext_gpu_mem = i_m_1[1]
         if w:
             power = w[gpu]
         # 每个gpu型号获取
