@@ -155,6 +155,7 @@ if __name__ == '__main__':
             ...
     if args.c == '' or args.t == '':
         sys.exit(0)
+    print('结束执行时间:', args.e, ', 总耗时:', get_time_diff(args.s, args.e), ', 退出代码:', args.d)
     machine = set_gpu(return_more=True, public_net=True)
     content = {
         '总耗时': get_time_diff(args.s, args.e),
