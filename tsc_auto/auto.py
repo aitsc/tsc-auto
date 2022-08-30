@@ -6,8 +6,24 @@ import time
 from datetime import datetime
 try:
     from set_gpu import set_gpu
+    from kill import get_user_processes
 except:
     from .set_gpu import set_gpu
+    from .kill import get_user_processes
+
+
+def get_current_user_cmd():
+    username = subprocess.getstatusoutput('whoami')[1]
+    user_processes = get_user_processes()
+    if username not in user_processes:
+        print('没有相关用户进程', username)
+        return
+    processes = user_processes[username]['pro']
+    processes = sorted(processes, key=lambda t:t['command'])
+    print('PID\tCommand')
+    for i, p in enumerate(processes):
+        print(p['pid'], p['command'], sep='\t')
+    print('总共', len(processes), '个程序')
 
 
 def benchmark():
@@ -86,6 +102,9 @@ def main():
             return
         elif para[0] == '--benchmark':  # 测试显卡性能
             benchmark()
+            return
+        elif para[0] == '--showp':  # 显示当前用户正在运行的命令
+            get_current_user_cmd()
             return
     # 一些转义符号复原
     for i, p in enumerate(para):
