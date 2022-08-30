@@ -20,10 +20,14 @@ def get_current_user_cmd():
         return
     processes = user_processes[username]['pro']
     processes = sorted(processes, key=lambda t:t['command'])
+    all_cmd = set()
     print('PID\tCommand')
     for i, p in enumerate(processes):
+        if p['command'] in all_cmd:
+            continue
         print(p['pid'], p['command'], sep='\t')
-    print('总共', len(processes), '个程序')
+        all_cmd.add(p['command'])
+    print('总共 {} 个程序, {} 种程序'.format(len(processes), i))
 
 
 def benchmark():
@@ -103,7 +107,7 @@ def main():
         elif para[0] == '--benchmark':  # 测试显卡性能
             benchmark()
             return
-        elif para[0] == '--showp':  # 显示当前用户正在运行的命令
+        elif para[0] == '--showp':  # 显示当前用户正在运行的命令(去重复)
             get_current_user_cmd()
             return
     # 一些转义符号复原
