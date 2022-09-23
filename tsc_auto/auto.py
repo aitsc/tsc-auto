@@ -48,27 +48,33 @@ def wait_gpus(para_L):
         '-c': 0.1,  # 至少剩余多少gpu使用率, 百分比
         '-m': 0.8,  # 至少剩余多少显存, 小于1是百分比, 大于1是MB
         '-t': 10,  # 这些显卡至少连续几秒钟满足这些条件
+        '-g': '',  # 等待哪些显卡,例如: 0,2
     }
     i = 0
     for p in para_L:
         if '=' in p and p.split('=')[0] in args:
-            args[p.split('=')[0]] = float(p.split('=')[1])
+            if p.split('=')[0] in {'-g'}:
+                args[p.split('=')[0]] = p.split('=')[1]
+            else:
+                args[p.split('=')[0]] = float(p.split('=')[1])
         else:
             break
         i += 1
     para_L = para_L[i:]
-    # 获取gpus
-    gpus = []
     cmd = ' ' + ' '.join(para_L) + ' '
-    gpus_re = [
-        r'(?<= --include=localhost:)\d[\d,]*(?= )',  # deepspeed
-        r'(?<= CUDA_VISIBLE_DEVICES=)\d[\d,]*(?= )',
-    ]
-    for r in gpus_re:
-        ret = re.search(r, cmd)
-        if ret:
-            gpus = [int(i) for i in ret.group().strip(',').split(',')]
-            break
+    # 获取gpus
+    gpus = [int(i) for i in args['-g'].split(',') if i]
+    # gpus = []
+    # gpus_re = [
+    #     r'(?<= --include=localhost:)\d[\d,]*(?= )',  # deepspeed
+    #     r'(?<= CUDA_VISIBLE_DEVICES=)\d[\d,]*(?= )',
+    # ]
+    # for r in gpus_re:
+    #     ret = re.search(r, cmd)
+    #     if ret:
+    #         gpus = [int(i) for i in ret.group().strip(',').split(',')]
+    #         break
+    # 等待命令
     print(cmd.strip())
     print('等待GPU {} 满足条件:'.format(gpus), args, datetime.now())
     gpu_info = {i: None for i in gpus}  # {序号:满足要求的时间,..}

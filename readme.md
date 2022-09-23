@@ -19,7 +19,7 @@ pip install tsc-auto
   4. 测试: ta -x 你的token -o echo 成功
   5. 注意: 运行机需要联网; 不能使用ta自带的后台运行方式(可以手动nohup); 频率太高可能[封号](https://www.pushplus.plus/doc/help/limit.html#接口限制)/[封ip](https://www.pushplus.plus/doc/help/ip.html)
 - ta --benchmark 可测试显卡性能
-- ta --wait CUDA_VISIBLE_DEVICES=1,2 python test.py 可等待显卡1,2满足空闲条件后再执行后面的命令
+- ta --wait -c=0.1 -m=0.8 -t=10 -g=1,2 python test.py 可等待显卡1,2满足空闲条件(至少剩余10%gpu使用率+至少剩余80%显存+持续10秒钟)后再执行后面的命令
 - ta --showp 可显示当前用户的所有运行程序(去重复)命令
 
 ## cuda的位置默认在用户主目录 (可以使用 ln -s 软链接)
