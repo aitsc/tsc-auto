@@ -9,7 +9,7 @@ else:
 
 setup(
     name='tsc-auto',
-    version='0.29',
+    version='0.32',
     description="Auto selector for GPU and CUDA, support the detection of tensorflow or torch",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -29,6 +29,7 @@ setup(
         'console_scripts': [
             'ta=tsc_auto.auto:main',  # 包不能有-符号
             'tkill=tsc_auto.kill:main',
+            'ressh=tsc_auto.ressh:main',
         ],
     },
     python_requires='>=3.6',

@@ -78,3 +78,12 @@ pip install tsc-auto
 - 首先, 运行 tkill -c 'kill.config' -t 再终止程序(ctrl+c), 用于生成默认配置文件
 - 然后, 修改配置文件的内容
 - 最后, 运行 tkill -c 'kill.config' 开启限制程序
+
+# 功能3: ressh
+## 介绍
+- 用于在断网后自动重新连接ssh,也可以在一行命令行中直接输入密码登录
+
+## 使用方式
+- 查看帮助: ressh -h
+- 登录: ressh user@ip -p port
+- 登录后自动输入密码并自动进入tmux: ressh user@ip -p port --tmux --password=你的密码
