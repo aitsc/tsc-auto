@@ -8,7 +8,7 @@ def main():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--tmux', action='store_true', help='是否自动进入tmux')
     parser.add_argument('--password', type=str, default=None, help='ssh连接的密码(先正常登录一次)')
-    parser.add_argument('--try_interval', type=float, default=1, help='断线重连接的间隔时间,单位秒')
+    parser.add_argument('--try_interval', type=float, default=3, help='断线重连接的间隔时间,单位秒')
     parser.add_argument('--tp', action='store_true', help='用于协助默认端口参数下的tp代理命令')
     parser.add_argument('--tp_r', type=str, default='24943:127.0.0.1:7890', help='tp远程端口转发信息')
     args, cmd_ = parser.parse_known_args()
