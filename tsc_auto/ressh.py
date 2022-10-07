@@ -13,10 +13,14 @@ def main():
     # 构建命令
     cmd_ = ['-o ServerAliveInterval=5 -o ServerAliveCountMax=3'] + cmd_
     if args.tmux:
-        cmd_ = ['-t -o RemoteCommand="tmux a||~/tmux a||tmux||~/tmux"'] + cmd_
+        if args.password:
+            cmd_ = ['-t -o RemoteCommand=tmux\\ a||~/tmux\\ a||tmux||~/tmux'] + cmd_
+        else:
+            cmd_ = ['-t -o RemoteCommand="tmux a||~/tmux a||tmux||~/tmux"'] + cmd_
     cmd = 'ssh ' + ' '.join(cmd_)
     if args.password:
         cmd = """expect -c 'spawn {}; expect "*password:"; send "{}\\r"; interact'""".format(cmd, args.password)
+    print(cmd)
     # 循环运行
     i_try = 0
     while True:
