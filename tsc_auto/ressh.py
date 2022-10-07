@@ -10,11 +10,12 @@ def main():
     parser.add_argument('--password', type=str, default=None, help='ssh连接的密码(先正常登录一次)')
     parser.add_argument('--try_interval', type=float, default=1, help='断线重连接的间隔时间,单位秒')
     parser.add_argument('--tp', action='store_true', help='用于协助默认端口参数下的tp代理命令')
+    parser.add_argument('--tp_r', type=str, default='24943:127.0.0.1:7890', help='tp远程端口转发信息')
     args, cmd_ = parser.parse_known_args()
     # 构建命令
     cmd_ = ['-o ServerAliveInterval=5 -o ServerAliveCountMax=3'] + cmd_
-    if args.tp:
-        cmd_ = ['-R 24943:127.0.0.1:7890'] + cmd_
+    if args.tp and args.tp_r:
+        cmd_ = ['-R {}'.format(args.tp_r)] + cmd_
     if args.tmux:
         if args.password:
             cmd_ = ['-t -o RemoteCommand=tmux\\ a||~/tmux\\ a||tmux||~/tmux'] + cmd_  # 或者加双引号放在最后并去除 -o RemoteCommand
