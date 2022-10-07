@@ -14,7 +14,7 @@ def main():
     cmd_ = ['-o ServerAliveInterval=5 -o ServerAliveCountMax=3'] + cmd_
     if args.tmux:
         if args.password:
-            cmd_ = ['-t -o RemoteCommand=tmux\\ a||~/tmux\\ a||tmux||~/tmux'] + cmd_
+            cmd_ = ['-t -o RemoteCommand=tmux\\ a||~/tmux\\ a||tmux||~/tmux'] + cmd_  # 或者加双引号放在最后并去除 -o RemoteCommand
         else:
             cmd_ = ['-t -o RemoteCommand="tmux a||~/tmux a||tmux||~/tmux"'] + cmd_
     cmd = 'ssh ' + ' '.join(cmd_)
