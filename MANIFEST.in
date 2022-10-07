@@ -1,2 +1,3 @@
 recursive-include tsc_auto *.sh
 recursive-include tsc_auto *.config
+recursive-include tsc_auto *proxychains4*

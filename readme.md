@@ -87,3 +87,14 @@ pip install tsc-auto
 - 查看帮助: ressh -h
 - 登录: ressh user@ip -p port
 - 登录后自动输入密码并自动进入tmux: ressh user@ip -p port --tmux --password=你的密码
+
+
+# 功能4: tp
+## 介绍
+- 服务器代理
+
+## 使用方式
+- 服务器和客户端都需要安装包: pip install tsc-auto
+- 本地打开http代理开放到端口 7890, 可借助 [clash](https://github.com/Fndroid/clash_for_windows_pkg/releases)
+- 登录服务器: ressh ssh参数 --tp
+- 登录后使用代理: tp curl google.com
