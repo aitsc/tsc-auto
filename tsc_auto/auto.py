@@ -132,7 +132,7 @@ def main():
     else:
         raise NameError(str(auto) + ' 寻找auto.sh错误!')
     # 运行
-    cmd = f'chmod 777 {auto} && {auto} ' + ' '.join(para)
+    cmd = f'chmod 777 {auto} ; {auto} ' + ' '.join(para)
     os.system(cmd)
 
 
