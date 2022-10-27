@@ -29,13 +29,13 @@ def main():
     if args.tp__port and args.tp__port != 24943 or args.tp__ip and args.tp__ip != '127.0.0.1' or args.tp__socks5:
         cmd_add = 'cp {} ~/ && '.format(pc4_conf)
         if args.tp__port:
-            cmd_add += 'sed -i "s/24943/{}/g" ~/proxychains.config && '.format(args.tp__port)
+            cmd_add += 'sed -i "s/24943/{}/g" ~/.proxychains.config && '.format(args.tp__port)
         if args.tp__ip:
-            cmd_add += 'sed -i "s/127.0.0.1/{}/g" ~/proxychains.config && '.format(args.tp__ip)
+            cmd_add += 'sed -i "s/127.0.0.1/{}/g" ~/.proxychains.config && '.format(args.tp__ip)
         if args.tp__socks5:
-            cmd_add += 'sed -i "s/http/socks5/g" ~/proxychains.config && '
-        cmd = cmd_add + cmd.replace(pc4_conf, '~/proxychains.config')
-        cmd += '; rm ~/proxychains.config'
+            cmd_add += 'sed -i "s/http/socks5/g" ~/.proxychains.config && '
+        cmd = cmd_add + cmd.replace(pc4_conf, '~/.proxychains.config')
+        cmd += '; rm ~/.proxychains.config'
     os.system(cmd)
 
 
