@@ -27,7 +27,7 @@ def main():
     # 运行
     cmd = 'chmod 777 {} {} ; {} -f {} '.format(pc4, pc4_so, pc4, pc4_conf) + ' '.join(cmd_)
     if args.tp__port and args.tp__port != 24943 or args.tp__ip and args.tp__ip != '127.0.0.1' or args.tp__socks5:
-        cmd_add = 'cp {} ~/ && '.format(pc4_conf)
+        cmd_add = 'cp {} ~/.proxychains.config && '.format(pc4_conf)
         if args.tp__port:
             cmd_add += 'sed -i "s/24943/{}/g" ~/.proxychains.config && '.format(args.tp__port)
         if args.tp__ip:
