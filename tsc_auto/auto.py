@@ -132,7 +132,10 @@ def show_stat(width=100):
             del ret[g]
     ret = sorted(ret.items(), key=lambda t: t[0])
     pprint(ret, width=width)
-    nvidia_htop(l=width-62, c=False, p=None, show_gpu=False)
+    try:
+        nvidia_htop(l=width-62, c=False, p=None, show_gpu=False)
+    except:
+        ...
 
 
 def main():
