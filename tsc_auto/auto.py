@@ -8,9 +8,11 @@ from pprint import pprint
 try:
     from set_gpu import set_gpu
     from kill import get_user_processes
+    from nvidia_htop import nvidia_htop
 except:
     from .set_gpu import set_gpu
     from .kill import get_user_processes
+    from .nvidia_htop import nvidia_htop
 
 
 def get_current_user_cmd():
@@ -103,6 +105,34 @@ def wait_gpus(para_L):
             os.system(cmd.strip())
             break
         time.sleep(1)
+        
+        
+def show_stat(width=100):
+    ret = set_gpu(return_more=True, public_net=False)
+    # 整合gpu信息
+    gpu_info = ['gpu_usage', 'ext_gpu_mem', 'all_gpu_mem', 'gpu_power', 'gpu_type']
+    if sum(g in ret for g in gpu_info) == len(gpu_info):
+        ret['gpu_usage_mem_power_type'] = []
+        for i, (u, m, am, p, t) in enumerate(zip(*[ret[g] for g in gpu_info])):
+            ret['gpu_usage_mem_power_type'].append((i, u, '{}/{}M'.format(am-m, am), p, t))
+        for g in gpu_info:
+            del ret[g]
+    # 整合cpu信息
+    cpu_info = ['ext_cpu', 'ext_mem', 'all_mem', 'cpu_info']
+    if sum(g in ret for g in cpu_info) == len(cpu_info):
+        u, m, am, t = [ret[g] for g in cpu_info]
+        ret['cpu_usage_mem_num'] = [round(100 - float(u), 1), '{}/{}M'.format(am-m, am), t]
+        for g in cpu_info:
+            del ret[g]
+    # 整合网络信息
+    net_info = ['hostname', 'ip']
+    if sum(g in ret for g in net_info) == len(net_info):
+        ret['hostname_ip'] = [ret[g] for g in net_info]
+        for g in net_info:
+            del ret[g]
+    ret = sorted(ret.items(), key=lambda t: t[0])
+    pprint(ret, width=width)
+    nvidia_htop(l=width-62, c=False, p=None, show_gpu=False)
 
 
 def main():
@@ -117,17 +147,12 @@ def main():
         elif para[0] == '--showp':  # 显示当前用户正在运行的命令(去重复)
             get_current_user_cmd()
             return
-        elif para[0] == '--show':  # 显示当前系统资源信息
-            ret = set_gpu(return_more=True, public_net=False)
-            gpu_info = ['gpu_usage', 'ext_gpu_mem', 'all_gpu_mem', 'gpu_power', 'gpu_type']
-            if sum(g in ret for g in gpu_info) == len(gpu_info):
-                ret['gpu_usage_mem_power_type'] = []  # 整合gpu信息
-                for i, (u, m, am, p, t) in enumerate(zip(*[ret[g] for g in gpu_info])):
-                    ret['gpu_usage_mem_power_type'].append((i, u, '{}/{}'.format(am-m, am), p, t))
-                for g in gpu_info:
-                    del ret[g]
-            ret = sorted(ret.items(), key=lambda t: t[0])
-            pprint(ret, width=120)
+        elif re.search(r'^--show($|[= ]+[0-9]+$)', para[0]):  # 显示当前系统资源信息
+            width = re.split(r'[= ]+', para[0])
+            if len(width) == 2:
+                show_stat(int(width[1]))
+            else:
+                show_stat()
             return
     # 一些转义符号复原
     for i, p in enumerate(para):

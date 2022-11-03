@@ -9,7 +9,7 @@ else:
 
 setup(
     name='tsc-auto',
-    version='0.44',
+    version='0.45',
     description="Auto selector for GPU and CUDA, support the detection of tensorflow or torch",
     long_description=long_description,
     long_description_content_type="text/markdown",
