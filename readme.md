@@ -21,6 +21,18 @@ pip install tsc-auto
 - ta --benchmark 可测试显卡性能
 - ta --wait -c=0.1 -m=0.8 -t=10 -g=1,2 python test.py 可等待显卡1,2满足空闲条件(至少剩余10%gpu使用率+至少剩余80%显存+持续10秒钟)后再执行后面的命令
 - ta --showp 可显示当前用户的所有运行程序(去重复)命令
+- ta --show 显示当前系统资源信息, 例如:
+```python
+[('all_mem', 96413),
+ ('cpu_info', '16:1-8-2'),
+ ('cpu_type', ['16  Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz']),
+ ('ext_cpu', '97.5'),
+ ('ext_mem', 69614),
+ ('gpu_usage_mem_power_type', [(0, 0, '5093/11019', '1W/260W', 'NVIDIA GeForce RTX 2080 Ti')]),
+ ('hostname', 'test'),
+ ('ip', '192.168.2.2'),
+ ('platform', 'Linux-5.11.0-40-generic-x86_64-with-glibc2.31')]
+```
 
 ## cuda的位置默认在用户主目录 (可以使用 ln -s 软链接)
 - ...

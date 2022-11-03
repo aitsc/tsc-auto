@@ -4,6 +4,7 @@ import subprocess
 import re
 import time
 from datetime import datetime
+from pprint import pprint
 try:
     from set_gpu import set_gpu
     from kill import get_user_processes
@@ -19,7 +20,7 @@ def get_current_user_cmd():
         print('没有相关用户进程', username)
         return
     processes = user_processes[username]['pro']
-    processes = sorted(processes, key=lambda t:t['command'])
+    processes = sorted(processes, key=lambda t: t['command'])
     all_cmd = set()
     print('PID\tCommand')
     for i, p in enumerate(processes):
@@ -98,7 +99,7 @@ def wait_gpus(para_L):
                 bypass = False
                 break
         if bypass:
-            print('等待 {} 秒GPU满足条件开始运行'.format(round(time.time()-start,2)), datetime.now())
+            print('等待 {} 秒GPU满足条件开始运行'.format(round(time.time()-start, 2)), datetime.now())
             os.system(cmd.strip())
             break
         time.sleep(1)
@@ -115,6 +116,18 @@ def main():
             return
         elif para[0] == '--showp':  # 显示当前用户正在运行的命令(去重复)
             get_current_user_cmd()
+            return
+        elif para[0] == '--show':  # 显示当前系统资源信息
+            ret = set_gpu(return_more=True, public_net=False)
+            gpu_info = ['gpu_usage', 'ext_gpu_mem', 'all_gpu_mem', 'gpu_power', 'gpu_type']
+            if sum(g in ret for g in gpu_info) == len(gpu_info):
+                ret['gpu_usage_mem_power_type'] = []  # 整合gpu信息
+                for i, (u, m, am, p, t) in enumerate(zip(*[ret[g] for g in gpu_info])):
+                    ret['gpu_usage_mem_power_type'].append((i, u, '{}/{}'.format(am-m, am), p, t))
+                for g in gpu_info:
+                    del ret[g]
+            ret = sorted(ret.items(), key=lambda t: t[0])
+            pprint(ret, width=120)
             return
     # 一些转义符号复原
     for i, p in enumerate(para):
