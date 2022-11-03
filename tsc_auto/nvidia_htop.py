@@ -112,15 +112,15 @@ def nvidia_htop(l=18, c=False, p=None, show_gpu=True):
         for line in lines_to_print[:-1]:
             print(line)
 
-        no_running_process = "No running processes found"
-        if no_running_process in lines[i] or lines[i].startswith("+--"):
-            print(lines[-1].strip())
-            print("| " + no_running_process + " " * (73 - len(no_running_process)) + "   |")
-            # Issue #9, running inside docker and seeing no processes
-            if lines[i].startswith("+--"):
-                print("| If you're running in a container, you'll only see processes running inside. |")
-            print(lines[-1])
-            sys.exit()
+    no_running_process = "No running processes found"
+    if no_running_process in lines[i] or lines[i].startswith("+--"):
+        print(lines[-1].strip())
+        print("| " + no_running_process + " " * (73 - len(no_running_process)) + "   |")
+        # Issue #9, running inside docker and seeing no processes
+        if lines[i].startswith("+--"):
+            print("| If you're running in a container, you'll only see processes running inside. |")
+        print(lines[-1])
+        sys.exit()
 
     # Parse the PIDs from the lower part
     gpu_num = []
