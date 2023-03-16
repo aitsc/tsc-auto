@@ -202,16 +202,65 @@ def kill_processes(config_, test=False):
             print()
 
 
+def get_dev_nvidia():
+    (status, output) = subprocess.getstatusoutput('nvidia-smi --query-compute-apps=pid --format=csv,noheader')
+    used_pids = set([i for i in output.strip().split('\n') if i.isdigit()])
+    (status, output) = subprocess.getstatusoutput('lsof /dev/nvidia*')
+    processes = {}
+    pattern = re.compile(r'(\S+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S*)\s+(\S+)\s+(.*)')
+    for line in output.strip().split('\n'):
+        match = pattern.match(line.strip())
+        if match:
+            command, pid, user, fd, file_type, device, size_off, node, name = match.groups()
+            processes.setdefault(pid, {
+                'command': command, 
+                'user': user, 
+                'used': pid in used_pids,  # 是否可以在 nvidia-smi 命令中看到
+                'files': [],
+            })['files'].append({
+                'fd': fd,  # 文件描述符。可能的值包括：数字、字母（如 cwd，rtd，txt，mem 等）或数字加字母（如 0r，1w 等）
+                'file_type': file_type,  # 文件类型。可能的值包括：REG（普通文件）、DIR（目录）、CHR（字符设备）、BLK（块设备）、FIFO（命名管道）等。
+                'device': device,  # 设备号。格式为 主设备号,次设备号
+                'size_off': size_off,  # 文件大小或偏移量
+                'node': node,  # 节点号
+                'name': name  # 文件名或设备名
+            })
+    return processes
+
+
 def main():
     parser = argparse.ArgumentParser(description='用于限制linux系统的cpu/gpu资源使用')
     parser.add_argument('-c', default='kill.config', help='配置文件路径, 文件不存在会自动创建一个默认配置')  # 配置文件路径
     parser.add_argument('-t', action="store_true", help='是否进行测试, 测试不会杀死进程, 并修改为容易触发kill的参数')
     parser.add_argument('--knp', default='', help='kill nvidia python user, 退出某用户在显卡中的python进程, 会忽略其他功能')
+    parser.add_argument('--knp2', default='', help='和knp类似,但是是删除这些用户以外的没有在nvidia-smi命令中显示的占用nvidia设备的python进程,可以填任意用户或非用户,英文逗号分隔.有可能因为删除相关进程而误影响到显卡进程,可以排除不想动的用户')
     args, unknown = parser.parse_known_args()  # 忽略未知参数
     if args.knp != '':
         os.system(
             '''up1kEK9m=$(lsof /dev/nvidia* | grep -E python.+%s); echo -e "$up1kEK9m\\nStart killing in 5 seconds"; sleep 5; echo "$up1kEK9m" | awk '{print $2}' | xargs -I {} kill -9 {}''' % args.knp)
         sys.exit(0)
+    if args.knp2 != '':
+        no_kill_users = set(args.knp2.split(','))
+        user_pids = {}  # {user:{pid,..},..}
+        processes = get_dev_nvidia()
+        for k, v in processes.items():
+            if not v['used'] and 'python' in v['command'] and v['user'] not in no_kill_users:
+                user_pids.setdefault(v['user'], set()).add(k)
+        if user_pids:
+            print('10秒后将kill的进程:')
+            kill_pids = set()  # {pid,..}
+            for k, v in user_pids.items():
+                print(k, sorted(v))
+                kill_pids |= v
+            time.sleep(10)
+            print('开始kill...')
+            for i in kill_pids:
+                os.system('kill -9 ' + i)
+            print('完成{}个进程的kill'.format(len(kill_pids)))
+        else:
+            print('没有需要kill的进程')
+        sys.exit(0)
+
     args.c = os.path.expanduser(args.c)  # 可以使用 ~ 表示用户目录
     if not os.path.exists(args.c):
         # 自动寻找默认 kill.config 的位置
