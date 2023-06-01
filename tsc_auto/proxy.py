@@ -20,6 +20,9 @@ def main():
     # 没有报错
     if pc4[0] == 0:
         pc4 = pc4[1]
+        if '/site-packages/tsc_auto/proxychains4 ' in pc4:
+            # 因为 conda 安装 python3.10 会出现名叫 python3.1 的文件夹
+            pc4 = pc4.rsplit('/site-packages/tsc_auto/proxychains4 ', 1)[1]
         pc4_conf = os.path.join(os.path.dirname(pc4), 'proxychains.config')
         pc4_so = os.path.join(os.path.dirname(pc4), 'libproxychains4.so')
     else:
