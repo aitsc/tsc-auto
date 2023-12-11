@@ -126,7 +126,11 @@ def set_gpu(showAllGpu=False, return_more=False, public_net=False):
         gpu_type = subprocess.getstatusoutput('nvidia-smi -L')[1].split('\n')
         gpu_type = [re.search(r'(?<=: )[^(\r\n]+', i).group().strip() for i in gpu_type]
     hostname = subprocess.getstatusoutput('hostname')[1]
-    ip = socket.gethostbyname(hostname)
+    try:
+        ip = socket.gethostbyname(hostname)
+    except:
+        # hostname -I | awk '{print $1}'
+        ip = subprocess.getstatusoutput('hostname -I')[1].split(' ')[0]
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 80))
