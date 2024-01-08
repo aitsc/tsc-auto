@@ -34,6 +34,13 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+      --py)
+      py="$2"
+      spy=${py%bin*}lib/python*/site-packages/tsc_auto/set_gpu.py
+      npy=${py%bin*}lib/python*/site-packages/tsc_auto/notice.py
+      shift # past argument
+      shift # past value
+      ;;
       -c)
       deep="$2"  # 自定义cuda版本号
       shift # past argument
@@ -123,7 +130,8 @@ if [ $help ]||[ ! $have_para ]; then
   echo -e '-d DEVICES\t指定gpu编号设备, 即设置CUDA_VISIBLE_DEVICES,优先级在-n之上,不能有空格'
   echo -e '-m CUDA_PATH\t指定cuda整体所在目录, 默认是用户主目录~, 从而形成 ~/cuda/11.1 等'
   echo -e '-x token\t运行结束通过 https://pushplus.plus 发微信通知(-l不支持), 运行机需联网'
-  echo -e '--stat\t\t不运行程序, 只显示资源统计结果'
+  echo -e '--py PY_PATH\tpython的路径, 代替 which python, 可选'
+  echo -e '--stat\t\t不运行程序, 只显示资源统计结果, 命令放路径控制参数后面'
   echo -e '-h, --help\t查看帮助'
   echo -e '\t详细说明: https://github.com/aitsc/tsc-auto'
   echo -e '\tAuthor by tanshicheng 2022.05.29'
