@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+import sys
 
 
 def main():
@@ -39,7 +40,8 @@ def main():
             cmd_add += 'sed -i "s/http/socks5/g" ~/.proxychains.config && '
         cmd = cmd_add + cmd.replace(pc4_conf, '~/.proxychains.config')
         cmd += '; rm ~/.proxychains.config'
-    os.system(cmd)
+    exit_status = os.system(cmd)
+    sys.exit(exit_status)
 
 
 if __name__ == "__main__":
