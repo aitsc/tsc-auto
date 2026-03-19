@@ -2,14 +2,17 @@
 from setuptools import setup, find_packages
 import os
 
-if os.path.exists('readme.md'):
-    long_description = open('readme.md', 'r', encoding='utf8').read()
+base_dir = os.path.dirname(__file__)
+readme_path = os.path.join(base_dir, 'readme.md')
+
+if os.path.exists(readme_path):
+    long_description = open(readme_path, 'r', encoding='utf8').read()
 else:
     long_description = '教程: https://github.com/aitsc/tsc-auto'
 
 setup(
     name='tsc-auto',
-    version='0.53',
+    version='0.54',
     description="Auto selector for GPU and CUDA, support the detection of tensorflow or torch",
     long_description=long_description,
     long_description_content_type="text/markdown",

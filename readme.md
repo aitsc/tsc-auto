@@ -88,6 +88,7 @@ pip install tsc-auto
 - 查看帮助: ressh -h
 - 登录: ressh user@ip -p port
 - 登录后自动输入密码并自动进入tmux: ressh user@ip -p port --tmux --password=你的密码
+- 登录后自动进入指定名称的tmux会话, 不存在则新建: ressh user@ip -p port --tmu ressh
 
 
 # 功能4: tp
